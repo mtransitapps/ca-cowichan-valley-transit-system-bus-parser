@@ -28,7 +28,7 @@ import org.mtransit.parser.mt.data.MTrip;
 import org.mtransit.parser.mt.data.MTripStop;
 
 // https://bctransit.com/*/footer/open-data
-// https://bctransit.com/servlet/bctransit/data/GTFS - Cowichan Valley
+// https://www.bctransit.com/data/gtfs/cowichan-valley.zip
 public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTools {
 
 	public static void main(String[] args) {
@@ -245,11 +245,18 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 								"106201", // !=
 								"106202", // !=
 								"108018", // ==
+								"106237", // !=
+								"108089", // <>
+								"136234", // !=
 								"104033", // Central at Cowichan (NB) #Duncan
 						})) //
 				.addTripSort(MDirectionType.SOUTH.intValue(), //
 						Arrays.asList(new String[] { //
 						"104033", // Central at Cowichan (NB) #Duncan
+								"104021", // == !=
+								"104020", // !=
+								"108089", // != <>
+								"136248", // == !=
 								"108059", // !=
 								"136295", // xx Mill Bay at Handy (SB)
 								"136296", // !=
