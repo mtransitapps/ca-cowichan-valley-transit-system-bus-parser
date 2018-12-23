@@ -375,7 +375,7 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 	private static final String CLEAN_P2_REPLACEMENT = ") ";
 
 	private static final Pattern STARTS_WITH_VIA_DASH = Pattern.compile("([ ]?(\\-)?[ ]?via .*$)", Pattern.CASE_INSENSITIVE);
-	private static final Pattern STARTS_WITH_TO_DASH = Pattern.compile("(^.*[ ]?\\-[ ]?(to ))", Pattern.CASE_INSENSITIVE);
+	private static final Pattern STARTS_WITH_TO_DASH = Pattern.compile("(^.*[ ]?[\\-]?[ ]?(to ))", Pattern.CASE_INSENSITIVE);
 
 	private static final Pattern KEEP_TRAIL = Pattern.compile(String.format("((^|\\W){1}(%s)(\\W|$){1})", "trl"), Pattern.CASE_INSENSITIVE);
 	private static final String KEEP_TRAIL_REPLACEMENT = String.format("$2%s$4", TRAIL);
