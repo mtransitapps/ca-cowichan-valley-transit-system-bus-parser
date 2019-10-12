@@ -397,6 +397,16 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 
 	@Override
 	public boolean mergeHeadsign(MTrip mTrip, MTrip mTripToMerge) {
+		List<String> headsignsValues = Arrays.asList(mTrip.getHeadsignValue(), mTripToMerge.getHeadsignValue());
+		if (mTrip.getRouteId() == 4L) {
+			if (Arrays.asList( //
+					"East", //
+					"Maple Bay" //
+			).containsAll(headsignsValues)) {
+				mTrip.setHeadsignString("Maple Bay", mTrip.getHeadsignId());
+				return true;
+			}
+		}
 		System.out.printf("\nUnexpected trips to merge %s & %s!\n", mTrip, mTripToMerge);
 		System.exit(-1);
 		return false;
