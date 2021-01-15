@@ -5,14 +5,18 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.mtransit.parser.CleanUtils;
 import org.mtransit.parser.DefaultAgencyTools;
+import org.mtransit.parser.MTLog;
 import org.mtransit.parser.Pair;
 import org.mtransit.parser.SplitUtils;
 import org.mtransit.parser.SplitUtils.RouteTripSpec;
+import org.mtransit.parser.StringUtils;
 import org.mtransit.parser.Utils;
 import org.mtransit.parser.gtfs.data.GCalendar;
 import org.mtransit.parser.gtfs.data.GCalendarDate;
@@ -27,7 +31,9 @@ import org.mtransit.parser.mt.data.MRoute;
 import org.mtransit.parser.mt.data.MTrip;
 import org.mtransit.parser.mt.data.MTripStop;
 
-// https://bctransit.com/*/footer/open-data
+import static org.mtransit.parser.Constants.EMPTY;
+
+// https://www.bctransit.com/open-data
 // https://www.bctransit.com/data/gtfs/cowichan-valley.zip
 public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTools {
 
@@ -44,15 +50,16 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 		new CowichanValleyTransitSystemBusAgencyTools().start(args);
 	}
 
+	@Nullable
 	private HashSet<String> serviceIds;
 
 	@Override
 	public void start(String[] args) {
-		System.out.printf("\nGenerating Cowichan Valley Regional Transit System bus data...");
+		MTLog.log("Generating Cowichan Valley Regional Transit System bus data...");
 		long start = System.currentTimeMillis();
 		this.serviceIds = extractUsefulServiceIds(args, this, true);
 		super.start(args);
-		System.out.printf("\nGenerating Cowichan Valley Regional Transit System bus data... DONE in %s.\n",
+		MTLog.log("Generating Cowichan Valley Regional Transit System bus data... DONE in %s.",
 				Utils.getPrettyDuration(System.currentTimeMillis() - start));
 	}
 
@@ -143,49 +150,47 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 			if ("7x".equalsIgnoreCase(gRoute.getRouteShortName())) {
 				return "ACA86E";
 			}
-			System.out.printf("\nUnexpected route color for %s!\n", gRoute);
-			System.exit(-1);
-			return null;
+			throw new MTLog.Fatal("Unexpected route color for %s!", gRoute);
 		}
 		return super.getRouteColor(gRoute);
 	}
 
 	private static final String TRAIL = "Trail";
 
-	private static HashMap<Long, RouteTripSpec> ALL_ROUTE_TRIPS2;
+	private static final HashMap<Long, RouteTripSpec> ALL_ROUTE_TRIPS2;
 	static {
-		HashMap<Long, RouteTripSpec> map2 = new HashMap<Long, RouteTripSpec>();
+		HashMap<Long, RouteTripSpec> map2 = new HashMap<>();
 		map2.put(5L, new RouteTripSpec(5L, //
 				MDirectionType.NORTH.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Duncan", //
 				MDirectionType.SOUTH.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Eagle Hts") //
 				.addTripSort(MDirectionType.NORTH.intValue(), //
-						Arrays.asList(new String[] { //
+						Arrays.asList( //
 						"106205", // Polkey at Mearns (EB) #EagleHts
 								"106225", // ++
-								"104033", // Central at Cowichan (NB) #Duncan
-						})) //
+								"104033" // Central at Cowichan (NB) #Duncan
+						)) //
 				.addTripSort(MDirectionType.SOUTH.intValue(), //
-						Arrays.asList(new String[] { //
+						Arrays.asList( //
 						"104033", // Central at Cowichan (NB) #Duncan
 								"136113", // ++
-								"106205", // Polkey at Mearns (EB) #EagleHts
-						})) //
+								"106205" // Polkey at Mearns (EB) #EagleHts
+						)) //
 				.compileBothTripSort());
 		map2.put(7L, new RouteTripSpec(7L, //
 				MDirectionType.EAST.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Duncan", //
 				MDirectionType.WEST.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Cowichan Lk") //
 				.addTripSort(MDirectionType.EAST.intValue(), //
-						Arrays.asList(new String[] { //
+						Arrays.asList( //
 						"136191", // South Shore 10 block (WB) #CowichanLake
 								"136457", // == Cowichan Lake at Greendale (EB)
 								"136397", // != Cowichan Valley at Skutz Falls (EB)
 								"136034", // != Canada at Station (SB)
 								"136202", // != Cowichan Lake at Lake Park (EB)
 								"136110", // != Government at Station (EB)
-								"104033", // == Central at Cowichan (NB) #Duncan
-						})) //
+								"104033" // == Central at Cowichan (NB) #Duncan
+						)) //
 				.addTripSort(MDirectionType.WEST.intValue(), //
-						Arrays.asList(new String[] { //
+						Arrays.asList( //
 						"104033", // Central at Cowichan (NB) #Duncan
 								"106148", // == Canada at Station (NB)
 								"106131", // != Beverly at Duncan St (EB)
@@ -197,14 +202,14 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 								"136191", // xx South Shore 10 block (WB) #CowichanLake
 								"136195", // != South Shore at Stone (SB)
 								"136427", // != Somenos at Cowichan (NB)
-								"136191", // xx South Shore 10 block (WB) #CowichanLake
-						})) //
+								"136191" // xx South Shore 10 block (WB) #CowichanLake
+						)) //
 				.compileBothTripSort());
 		map2.put(8L, new RouteTripSpec(8L, //
 				MDirectionType.NORTH.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Duncan", //
 				MDirectionType.SOUTH.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Mill Bay") //
 				.addTripSort(MDirectionType.NORTH.intValue(), //
-						Arrays.asList(new String[] { //
+						Arrays.asList( //
 						"108060", // == Huckleberry at Noowick (NB) #MillBay
 								"104000", // == Lodgepole at Frayne (NB)
 								"108052", // != Deloume at Lodge Pole Rd (EB)
@@ -215,10 +220,10 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 								"108056", // !=
 								"104006", // !=
 								"136280", // ==
-								"104033", // Central at Cowichan (NB) #Duncan
-						})) //
+								"104033" // Central at Cowichan (NB) #Duncan
+						)) //
 				.addTripSort(MDirectionType.SOUTH.intValue(), //
-						Arrays.asList(new String[] { //
+						Arrays.asList( //
 						"104033", // Central at Cowichan (NB) #Duncan
 								"136373", // Cowichan Bay at Telegraph (SB)
 								"108051", // ==
@@ -229,14 +234,14 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 								"136295", // xx Mill Bay at Handy (SB)
 								"136296", // == Mill Bay at Bay (SB)
 								"136300", // != Mill Bay at Ferry (NB)
-								"108060", // == Huckleberry at Noowick (NB) #MillBay
-						})) //
+								"108060" // == Huckleberry at Noowick (NB) #MillBay
+						)) //
 				.compileBothTripSort());
 		map2.put(9L, new RouteTripSpec(9L, //
 				MDirectionType.NORTH.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Duncan", //
 				MDirectionType.SOUTH.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Mill Bay") //
 				.addTripSort(MDirectionType.NORTH.intValue(), //
-						Arrays.asList(new String[] { //
+						Arrays.asList( //
 						"108060", // Huckleberry at Noowick (NB) #MillBay
 								"108090", // !=
 								"136295", // xx Mill Bay at Handy (SB)
@@ -248,10 +253,10 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 								"106237", // !=
 								"108089", // <>
 								"136234", // !=
-								"104033", // Central at Cowichan (NB) #Duncan
-						})) //
+								"104033" // Central at Cowichan (NB) #Duncan
+						)) //
 				.addTripSort(MDirectionType.SOUTH.intValue(), //
-						Arrays.asList(new String[] { //
+						Arrays.asList( //
 						"104033", // Central at Cowichan (NB) #Duncan
 								"104021", // == !=
 								"104020", // !=
@@ -260,72 +265,72 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 								"108059", // !=
 								"136295", // xx Mill Bay at Handy (SB)
 								"136296", // !=
-								"108060", // Huckleberry at Noowick (NB) #MillBay
-						})) //
+								"108060" // Huckleberry at Noowick (NB) #MillBay
+						)) //
 				.compileBothTripSort());
 		map2.put(20L, new RouteTripSpec(20L, //
 				MDirectionType.EAST.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Cowichan Lk", //
 				MDirectionType.WEST.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Youbou") //
 				.addTripSort(MDirectionType.EAST.intValue(), //
-						Arrays.asList(new String[] { //
+						Arrays.asList( //
 						"108045", // Youbou Rd 10700 Block (NB)
 								"136193", // ++
-								"108088", // 20 Block South Shore Rd (WB) #CowichanLk
-						})) //
+								"108088" // 20 Block South Shore Rd (WB) #CowichanLk
+						)) //
 				.addTripSort(MDirectionType.WEST.intValue(), //
-						Arrays.asList(new String[] { //
+						Arrays.asList( //
 						"108088", // 20 Block South Shore Rd (WB) #CowichanLk
 								"108172", // ++
-								"108045", // Youbou Rd 10700 Block (NB)
-						})) //
+								"108045" // Youbou Rd 10700 Block (NB)
+						)) //
 				.compileBothTripSort());
 		map2.put(21L, new RouteTripSpec(21L, //
 				MDirectionType.EAST.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Cowichan Lk", //
 				MDirectionType.WEST.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Honeymoon Bay") //
 				.addTripSort(MDirectionType.EAST.intValue(), //
-						Arrays.asList(new String[] { //
+						Arrays.asList( //
 						"108168", // South Shore AT Park Ave (WB) #HoneymoonBay
 								"136200", // ++
-								"108088", // 20 Block South Shore Rd (WB) #CowichanLk
-						})) //
+								"108088" // 20 Block South Shore Rd (WB) #CowichanLk
+						)) //
 				.addTripSort(MDirectionType.WEST.intValue(), //
-						Arrays.asList(new String[] { //
+						Arrays.asList( //
 						"108088", // 20 Block South Shore Rd (WB) #CowichanLk
 								"136196", // ++
-								"108168", // South Shore AT Park Ave (WB) #HoneymoonBay
-						})) //
+								"108168" // South Shore AT Park Ave (WB) #HoneymoonBay
+						)) //
 				.compileBothTripSort());
 		map2.put(31L, new RouteTripSpec(31L, //
 				MDirectionType.EAST.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Ladysmith", //
 				MDirectionType.WEST.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Alderwood") //
 				.addTripSort(MDirectionType.EAST.intValue(), //
-						Arrays.asList(new String[] { //
+						Arrays.asList( //
 						"106078", // Birchwood at Maplewood (EB) #Alderwood
 								"106063", // ++
-								"106050", // 1st Ave at Symonds St (SB) #Ladysmith
-						})) //
+								"106050" // 1st Ave at Symonds St (SB) #Ladysmith
+						)) //
 				.addTripSort(MDirectionType.WEST.intValue(), //
-						Arrays.asList(new String[] { //
+						Arrays.asList( //
 						"106050", // 1st Ave at Symonds St (SB) #Ladysmith
 								"106062", // ++
-								"106078", // Birchwood at Maplewood (EB) #Alderwood
-						})) //
+								"106078" // Birchwood at Maplewood (EB) #Alderwood
+						)) //
 				.compileBothTripSort());
 		map2.put(34L, new RouteTripSpec(34L, //
 				MDirectionType.NORTH.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Ladysmith", //
 				MDirectionType.SOUTH.intValue(), MTrip.HEADSIGN_TYPE_STRING, "Chemainus") //
 				.addTripSort(MDirectionType.NORTH.intValue(), //
-						Arrays.asList(new String[] { //
+						Arrays.asList( //
 						"136142", // Pine at Lang (WB) #Chemainus
 								"106095", // ++
-								"106050", // 1st Ave at Symonds St (SB) #Ladysmith
-						})) //
+								"106050" // 1st Ave at Symonds St (SB) #Ladysmith
+						)) //
 				.addTripSort(MDirectionType.SOUTH.intValue(), //
-						Arrays.asList(new String[] { //
+						Arrays.asList( //
 						"106050", // 1st Ave at Symonds St (SB) #Ladysmith
 								"106098", // ++
-								"136142", // Pine at Lang (WB) #Chemainus
-						})) //
+								"136142" // Pine at Lang (WB) #Chemainus
+						)) //
 				.compileBothTripSort());
 		ALL_ROUTE_TRIPS2 = map2;
 	}
@@ -359,20 +364,18 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 		if (ALL_ROUTE_TRIPS2.containsKey(mRoute.getId())) {
 			return; // split
 		}
-		mTrip.setHeadsignString(cleanTripHeadsign(gTrip.getTripHeadsign()), gTrip.getDirectionId());
+		mTrip.setHeadsignString(
+			cleanTripHeadsign(gTrip.getTripHeadsignOrDefault()),
+			gTrip.getDirectionIdOrDefault()
+		);
 	}
 
 	private static final String EXCH = "Exch";
-	private static final Pattern EXCHANGE_ = Pattern.compile("((^|\\W){1}(exchange)(\\W|$){1})", Pattern.CASE_INSENSITIVE);
+	private static final Pattern EXCHANGE_ = Pattern.compile("((^|\\W)(exchange)(\\W|$))", Pattern.CASE_INSENSITIVE);
 	private static final String EXCHANGE_REPLACEMENT = "$2" + EXCH + "$4";
 
-	private static final Pattern EXPRESS_ = Pattern.compile("((^|\\W){1}(express)(\\W|$){1})", Pattern.CASE_INSENSITIVE);
+	private static final Pattern EXPRESS_ = Pattern.compile("((^|\\W)(express)(\\W|$))", Pattern.CASE_INSENSITIVE);
 	private static final String EXPRESS_REPLACEMENT = "$2$4";
-
-	private static final Pattern CLEAN_P1 = Pattern.compile("[\\s]*\\([\\s]*");
-	private static final String CLEAN_P1_REPLACEMENT = " (";
-	private static final Pattern CLEAN_P2 = Pattern.compile("[\\s]*\\)[\\s]*");
-	private static final String CLEAN_P2_REPLACEMENT = ") ";
 
 	private static final Pattern STARTS_WITH_VIA_DASH = Pattern.compile("([ ]?(\\-)?[ ]?via .*$)", Pattern.CASE_INSENSITIVE);
 	private static final Pattern STARTS_WITH_TO_DASH = Pattern.compile("(^.*[ ]?[\\-]?[ ]?(to ))", Pattern.CASE_INSENSITIVE);
@@ -382,12 +385,10 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 
 	@Override
 	public String cleanTripHeadsign(String tripHeadsign) {
-		tripHeadsign = STARTS_WITH_VIA_DASH.matcher(tripHeadsign).replaceAll(StringUtils.EMPTY);
-		tripHeadsign = STARTS_WITH_TO_DASH.matcher(tripHeadsign).replaceAll(StringUtils.EMPTY);
+		tripHeadsign = STARTS_WITH_VIA_DASH.matcher(tripHeadsign).replaceAll(EMPTY);
+		tripHeadsign = STARTS_WITH_TO_DASH.matcher(tripHeadsign).replaceAll(EMPTY);
 		tripHeadsign = EXPRESS_.matcher(tripHeadsign).replaceAll(EXPRESS_REPLACEMENT);
 		tripHeadsign = CleanUtils.CLEAN_AND.matcher(tripHeadsign).replaceAll(CleanUtils.CLEAN_AND_REPLACEMENT);
-		tripHeadsign = CLEAN_P1.matcher(tripHeadsign).replaceAll(CLEAN_P1_REPLACEMENT);
-		tripHeadsign = CLEAN_P2.matcher(tripHeadsign).replaceAll(CLEAN_P2_REPLACEMENT);
 		tripHeadsign = CleanUtils.cleanStreetTypes(tripHeadsign); // 1st
 		tripHeadsign = KEEP_TRAIL.matcher(tripHeadsign).replaceAll(KEEP_TRAIL_REPLACEMENT); // 2nd
 		tripHeadsign = CleanUtils.cleanSlashes(tripHeadsign);
@@ -407,16 +408,23 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 				return true;
 			}
 		}
-		System.out.printf("\nUnexpected trips to merge %s & %s!\n", mTrip, mTripToMerge);
-		System.exit(-1);
-		return false;
+		throw new MTLog.Fatal("Unexpected trips to merge %s & %s!", mTrip, mTripToMerge);
 	}
 
-	private static final Pattern STARTS_WITH_BOUND = Pattern.compile("(^(east|west|north|south)bound)", Pattern.CASE_INSENSITIVE);
+	@NotNull
+	private String[] getIgnoredUpperCaseWords() {
+		return new String[]{"BC"};
+	}
+
+	private static final Pattern STARTS_WITH_DCOM = Pattern.compile("(^(\\(-DCOM-\\)))", Pattern.CASE_INSENSITIVE);
+	private static final Pattern STARTS_WITH_IMPL = Pattern.compile("(^(\\(-IMPL-\\)))", Pattern.CASE_INSENSITIVE);
 
 	@Override
 	public String cleanStopName(String gStopName) {
-		gStopName = STARTS_WITH_BOUND.matcher(gStopName).replaceAll(StringUtils.EMPTY);
+		gStopName = CleanUtils.toLowerCaseUpperCaseWords(Locale.ENGLISH, gStopName, getIgnoredUpperCaseWords());
+		gStopName = STARTS_WITH_DCOM.matcher(gStopName).replaceAll(EMPTY);
+		gStopName = STARTS_WITH_IMPL.matcher(gStopName).replaceAll(EMPTY);
+		gStopName = CleanUtils.cleanBounds(gStopName);
 		gStopName = CleanUtils.CLEAN_AT.matcher(gStopName).replaceAll(CleanUtils.CLEAN_AT_REPLACEMENT);
 		gStopName = EXCHANGE_.matcher(gStopName).replaceAll(EXCHANGE_REPLACEMENT);
 		gStopName = CleanUtils.cleanStreetTypes(gStopName); // 1st
