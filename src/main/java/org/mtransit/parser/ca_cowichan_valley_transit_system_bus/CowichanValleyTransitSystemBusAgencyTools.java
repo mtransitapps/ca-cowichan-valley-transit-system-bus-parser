@@ -6,16 +6,17 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.mtransit.commons.CleanUtils;
 import org.mtransit.commons.StringUtils;
+import org.mtransit.parser.ColorUtils;
 import org.mtransit.parser.DefaultAgencyTools;
 import org.mtransit.parser.MTLog;
 import org.mtransit.parser.gtfs.data.GRoute;
+import org.mtransit.parser.gtfs.data.GStop;
 import org.mtransit.parser.mt.data.MAgency;
 
 import java.util.Locale;
 import java.util.regex.Pattern;
 
 // https://www.bctransit.com/open-data
-// https://www.bctransit.com/data/gtfs/cowichan-valley.zip
 public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTools {
 
 	public static void main(@NotNull String[] args) {
@@ -33,14 +34,6 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 		return "Cowichan Valley Regional TS";
 	}
 
-	private static final String AGENCY_ID = "10"; // Cowichan Valley Regional Transit System only
-
-	@Nullable
-	@Override
-	public String getAgencyId() {
-		return AGENCY_ID;
-	}
-
 	@NotNull
 	@Override
 	public Integer getAgencyRouteType() {
@@ -49,11 +42,16 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 
 	@Override
 	public boolean defaultRouteIdEnabled() {
-		return true;
+		return false; // required for GTFS-RT
 	}
 
 	@Override
 	public boolean useRouteShortNameForRouteId() {
+		return false; // required for GTFS-RT
+	}
+
+	@Override
+	public boolean defaultRouteLongNameEnabled() {
 		return true;
 	}
 
@@ -75,39 +73,47 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 
 	@Nullable
 	@Override
-	public String getRouteColor(@NotNull GRoute gRoute, @NotNull MAgency agency) {
-		if (StringUtils.isEmpty(gRoute.getRouteColor())) {
-			int rsn = Integer.parseInt(gRoute.getRouteShortName());
-			switch (rsn) {
-			// @formatter:off
-			case 2: return "17468B";
-			case 3: return "80CC28";
-			case 4: return "F68712";
-			case 5: return "C06EBE";
-			case 6: return "ED0790";
-			case 7: return "49690F";
-			case 8: return "49176D";
-			case 9: return "B2BB1E";
-			case 20: return "0073AD";
-			case 21: return "A54499";
-			case 31: return "FBBD09";
-			case 34: return "0B6FAE";
-			case 36: return "8A0C34";
-			case 44: return "00AA4F";
-			case 66: return "8CC63F";
-			case 99: return "114D8A";
-			// @formatter:on
-			}
-			if ("7x".equalsIgnoreCase(gRoute.getRouteShortName())) {
-				return "ACA86E";
-			}
-			throw new MTLog.Fatal("Unexpected route color for %s!", gRoute);
+	public String fixColor(@Nullable String color) {
+		if (ColorUtils.BLACK.equals(color)) {
+			color = null;
 		}
-		return super.getRouteColor(gRoute, agency);
+		return super.fixColor(color);
+	}
+
+	@Nullable
+	@Override
+	public String provideMissingRouteColor(@NotNull GRoute gRoute) {
+		switch (gRoute.getRouteShortName()) {
+		// @formatter:off
+		case "2": return "17468B";
+		case "3": return "80CC28";
+		case "4": return "F68712";
+		case "5": return "C06EBE";
+		case "6": return "ED0790";
+		case "7": return "49690F";
+		case "7x": return "ACA86E";
+		case "8": return "49176D";
+		case "9": return "B2BB1E";
+		case "20": return "0073AD";
+		case "21": return "A54499";
+		case "31": return "FBBD09";
+		case "34": return "0B6FAE";
+		case "36": return "8A0C34";
+		case "44": return "00AA4F";
+		case "66": return "8CC63F";
+		case "99": return "114D8A";
+		// @formatter:on
+		}
+		throw new MTLog.Fatal("Unexpected route color for %s!", gRoute.toStringPlus());
 	}
 
 	@Override
 	public boolean directionFinderEnabled() {
+		return true;
+	}
+
+	@Override
+	public boolean directionSplitterEnabled() {
 		return true;
 	}
 
@@ -159,5 +165,20 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 		gStopName = KEEP_TRAIL.matcher(gStopName).replaceAll(KEEP_TRAIL_REPLACEMENT); // 2nd
 		gStopName = CleanUtils.cleanNumbers(gStopName);
 		return CleanUtils.cleanLabel(gStopName);
+	}
+
+	@NotNull
+	@Override
+	public String getStopCode(@NotNull GStop gStop) {
+		if (StringUtils.isEmpty(gStop.getStopCode())) {
+			//noinspection deprecation
+			return gStop.getStopId(); // use stop ID as stop code (fall back = displayed on website)
+		}
+		return super.getStopCode(gStop);
+	}
+
+	@Override
+	public int getStopId(@NotNull GStop gStop) {
+		return super.getStopId(gStop); // required for GTFS-RT
 	}
 }
