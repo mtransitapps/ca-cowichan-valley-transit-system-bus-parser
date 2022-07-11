@@ -113,7 +113,7 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 	}
 
 	@Override
-	public boolean directionSplitterEnabled() {
+	public boolean directionSplitterEnabled(long routeId) {
 		return true;
 	}
 
