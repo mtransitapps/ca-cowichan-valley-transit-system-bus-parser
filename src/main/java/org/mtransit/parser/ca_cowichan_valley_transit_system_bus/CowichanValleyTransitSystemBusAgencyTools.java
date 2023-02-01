@@ -41,13 +41,24 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 	}
 
 	@Override
+	public long getRouteId(@NotNull GRoute gRoute) {
+		return Long.parseLong(gRoute.getRouteShortName()); // used by GTFS RT
+	}
+
+	@NotNull
+	@Override
+	public String getRouteShortName(@NotNull GRoute gRoute) {
+		return gRoute.getRouteId(); // used by GTFS RT // TODO export original route ID
+	}
+
+	@Override
 	public boolean defaultRouteIdEnabled() {
-		return false; // required for GTFS-RT
+		return false; // used by GTFS RT
 	}
 
 	@Override
 	public boolean useRouteShortNameForRouteId() {
-		return false; // required for GTFS-RT
+		return false; // used by GTFS RT
 	}
 
 	@Override
@@ -115,6 +126,14 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 	@Override
 	public boolean directionSplitterEnabled(long routeId) {
 		return true;
+	}
+
+	@Override
+	public boolean allowNonDescriptiveHeadSigns(long routeId) {
+		if (routeId == 9L) {
+			return true; // it's mess
+		}
+		return super.allowNonDescriptiveHeadSigns(routeId);
 	}
 
 	private static final Pattern EXPRESS_ = CleanUtils.cleanWords("express");
