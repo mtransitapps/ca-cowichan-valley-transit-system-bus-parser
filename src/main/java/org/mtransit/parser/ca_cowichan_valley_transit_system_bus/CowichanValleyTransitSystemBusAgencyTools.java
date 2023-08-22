@@ -131,7 +131,9 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 	@Override
 	public boolean allowNonDescriptiveHeadSigns(long routeId) {
 		if (routeId == 9L) {
-			return true; // it's mess
+			return true; // it's a mess
+		} else if (routeId == 34L) {
+			return true; // 2023-08-22 it's a mess
 		}
 		return super.allowNonDescriptiveHeadSigns(routeId);
 	}
