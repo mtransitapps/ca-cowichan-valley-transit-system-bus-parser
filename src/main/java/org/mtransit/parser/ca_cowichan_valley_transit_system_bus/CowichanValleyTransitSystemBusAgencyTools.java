@@ -41,24 +41,18 @@ public class CowichanValleyTransitSystemBusAgencyTools extends DefaultAgencyTool
 	}
 
 	@Override
-	public long getRouteId(@NotNull GRoute gRoute) {
-		return Long.parseLong(gRoute.getRouteShortName()); // used by GTFS RT
-	}
-
-	@NotNull
-	@Override
-	public String getRouteShortName(@NotNull GRoute gRoute) {
-		return gRoute.getRouteId(); // used by GTFS RT // TODO export original route ID
-	}
-
-	@Override
 	public boolean defaultRouteIdEnabled() {
-		return false; // used by GTFS RT
+		return true;
 	}
 
 	@Override
 	public boolean useRouteShortNameForRouteId() {
-		return false; // used by GTFS RT
+		return false; // route ID used by GTFS RT
+	}
+
+	@Override
+	public @Nullable String getRouteIdCleanupRegex() {
+		return "\\-[A-Z]+$";
 	}
 
 	@Override
